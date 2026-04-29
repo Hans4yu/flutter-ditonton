@@ -3,10 +3,12 @@ import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/domain/entities/genre.dart';
 import 'package:ditonton/domain/entities/movie.dart';
 import 'package:ditonton/domain/entities/movie_detail.dart';
-import 'package:ditonton/presentation/provider/movie_detail_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
+import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_event.dart';
+import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_state.dart';
 import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MovieDetailPage extends StatefulWidget {
   MovieDetailPage({required this.id, super.key});
@@ -25,24 +27,41 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<MovieDetailNotifier>(context, listen: false)
-          .fetchMovieDetail(widget.id);
-      Provider.of<MovieDetailNotifier>(context, listen: false)
-          .loadWatchlistStatus(widget.id);
+      context.read<MovieDetailBloc>()
+        ..add(FetchMovieDetail(widget.id))
+        ..add(LoadMovieWatchlistStatus(widget.id));
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<MovieDetailNotifier>(
-        builder: (context, provider, child) {
+      body: BlocConsumer<MovieDetailBloc, MovieDetailState>(
+        listenWhen: (previous, current) =>
+            previous.watchlistMessage != current.watchlistMessage &&
+            current.watchlistMessage.isNotEmpty,
+        listener: (context, state) {
+          final message = state.watchlistMessage;
+          if (message == MovieDetailBloc.watchlistAddSuccessMessage ||
+              message == MovieDetailBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          } else {
+            showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(content: Text(message)),
+            );
+          }
+        },
+        builder: (context, provider) {
           if (provider.movieState == RequestState.Loading) {
             return const LoadingView();
           }
-          if (provider.movieState == RequestState.Loaded) {
+          if (provider.movieState == RequestState.Loaded &&
+              provider.movie != null) {
             return DetailContent(
-              provider.movie,
+              provider.movie!,
               provider.movieRecommendations,
               provider.isAddedToWatchlist,
             );
@@ -104,8 +123,8 @@ class DetailContent extends StatelessWidget {
                 const SizedBox(height: 24),
                 Text('Recommendations', style: kHeading6),
                 const SizedBox(height: 12),
-                Consumer<MovieDetailNotifier>(
-                  builder: (context, data, child) {
+                BlocBuilder<MovieDetailBloc, MovieDetailState>(
+                  builder: (context, data) {
                     if (data.recommendationState == RequestState.Loading) {
                       return const LoadingView(height: 150);
                     }
@@ -129,31 +148,12 @@ class DetailContent extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleWatchlist(BuildContext context) async {
-    final notifier = Provider.of<MovieDetailNotifier>(
-      context,
-      listen: false,
-    );
-
+  void _toggleWatchlist(BuildContext context) {
+    final bloc = context.read<MovieDetailBloc>();
     if (!isAddedWatchlist) {
-      await notifier.addWatchlist(movie);
+      bloc.add(AddMovieToWatchlist(movie));
     } else {
-      await notifier.removeFromWatchlist(movie);
-    }
-
-    final message = notifier.watchlistMessage;
-    if (!context.mounted) return;
-
-    if (message == MovieDetailNotifier.watchlistAddSuccessMessage ||
-        message == MovieDetailNotifier.watchlistRemoveSuccessMessage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    } else {
-      showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(content: Text(message)),
-      );
+      bloc.add(RemoveMovieFromWatchlist(movie));
     }
   }
 

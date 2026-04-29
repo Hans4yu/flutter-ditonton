@@ -11,11 +11,17 @@ import 'package:ditonton/presentation/pages/search_page.dart';
 import 'package:ditonton/presentation/pages/top_rated_movies_page.dart';
 import 'package:ditonton/presentation/pages/tv_series_detail_page.dart';
 import 'package:ditonton/presentation/pages/watchlist_movies_page.dart';
-import 'package:ditonton/presentation/provider/movie_list_notifier.dart';
-import 'package:ditonton/presentation/provider/tv_series_list_notifier.dart';
+import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
+import 'package:ditonton/presentation/bloc/movie_list/movie_list_event.dart'
+    as movie_events;
+import 'package:ditonton/presentation/bloc/movie_list/movie_list_state.dart';
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_bloc.dart';
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_event.dart'
+    as tv_events;
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_state.dart';
 import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeMoviePage extends StatefulWidget {
   const HomeMoviePage({super.key});
@@ -32,13 +38,13 @@ class _HomeMoviePageState extends State<HomeMoviePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<MovieListNotifier>(context, listen: false)
-        ..fetchNowPlayingMovies()
-        ..fetchPopularMovies()
-        ..fetchTopRatedMovies();
-      Provider.of<TvSeriesListNotifier>(context, listen: false)
-        ..fetchOnTheAirTvSeries()
-        ..fetchPopularTvSeries();
+      context.read<MovieListBloc>()
+        ..add(const movie_events.FetchNowPlayingMovies())
+        ..add(const movie_events.FetchPopularMovies())
+        ..add(const movie_events.FetchTopRatedMovies());
+      context.read<TvSeriesListBloc>()
+        ..add(const tv_events.FetchOnTheAirTvSeries())
+        ..add(const tv_events.FetchPopularTvSeries());
     });
   }
 
@@ -97,8 +103,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<MovieListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<MovieListBloc, MovieListState>(
+              builder: (context, data) {
                 if (data.nowPlayingState == RequestState.Loading) {
                   return const LoadingView(height: 240);
                 }
@@ -110,8 +116,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<MovieListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<MovieListBloc, MovieListState>(
+              builder: (context, data) {
                 return _MovieSection(
                   title: 'Now Playing',
                   movies: data.nowPlayingMovies,
@@ -122,8 +128,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<MovieListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<MovieListBloc, MovieListState>(
+              builder: (context, data) {
                 return _MovieSection(
                   title: 'Popular',
                   movies: data.popularMovies,
@@ -137,8 +143,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<MovieListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<MovieListBloc, MovieListState>(
+              builder: (context, data) {
                 return _MovieSection(
                   title: 'Top Rated',
                   movies: data.topRatedMovies,
@@ -152,8 +158,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<TvSeriesListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+              builder: (context, data) {
                 return _TvSection(
                   title: 'On The Air TV Series',
                   tvSeries: data.onTheAirTvSeries,
@@ -164,8 +170,8 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Consumer<TvSeriesListNotifier>(
-              builder: (context, data, child) {
+            child: BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+              builder: (context, data) {
                 return _TvSection(
                   title: 'Popular TV Series',
                   tvSeries: data.popularTvSeries,
@@ -545,7 +551,7 @@ class _HorizontalContentCard extends StatelessWidget {
                         overview == null || overview!.isEmpty
                             ? 'Overview unavailable'
                             : overview!,
-                        maxLines: 3,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: kBodyText,
                       ),

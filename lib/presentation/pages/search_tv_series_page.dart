@@ -1,10 +1,12 @@
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/presentation/pages/tv_series_detail_page.dart';
-import 'package:ditonton/presentation/provider/tv_series_search_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_series_search/tv_series_search_bloc.dart';
+import 'package:ditonton/presentation/bloc/tv_series_search/tv_series_search_event.dart';
+import 'package:ditonton/presentation/bloc/tv_series_search/tv_series_search_state.dart';
 import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SearchTvSeriesPage extends StatelessWidget {
   const SearchTvSeriesPage({super.key});
@@ -22,8 +24,9 @@ class SearchTvSeriesPage extends StatelessWidget {
           children: [
             TextField(
               onSubmitted: (query) {
-                Provider.of<TvSeriesSearchNotifier>(context, listen: false)
-                    .fetchTvSeriesSearch(query);
+                context.read<TvSeriesSearchBloc>().add(
+                      SearchTvSeriesRequested(query),
+                    );
               },
               decoration: const InputDecoration(
                 hintText: 'Search TV series titles',
@@ -35,8 +38,8 @@ class SearchTvSeriesPage extends StatelessWidget {
             Text('Search Result', style: kHeading6),
             const SizedBox(height: 12),
             Expanded(
-              child: Consumer<TvSeriesSearchNotifier>(
-                builder: (context, data, child) {
+              child: BlocBuilder<TvSeriesSearchBloc, TvSeriesSearchState>(
+                builder: (context, data) {
                   if (data.state == RequestState.Loading) {
                     return const LoadingView();
                   }

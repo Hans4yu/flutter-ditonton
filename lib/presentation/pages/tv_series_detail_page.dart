@@ -4,10 +4,12 @@ import 'package:ditonton/domain/entities/genre.dart';
 import 'package:ditonton/domain/entities/season.dart';
 import 'package:ditonton/domain/entities/tv_series.dart';
 import 'package:ditonton/domain/entities/tv_series_detail.dart';
-import 'package:ditonton/presentation/provider/tv_series_detail_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_series_detail/tv_series_detail_bloc.dart';
+import 'package:ditonton/presentation/bloc/tv_series_detail/tv_series_detail_event.dart';
+import 'package:ditonton/presentation/bloc/tv_series_detail/tv_series_detail_state.dart';
 import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TvSeriesDetailPage extends StatefulWidget {
   const TvSeriesDetailPage({required this.id, super.key});
@@ -26,24 +28,41 @@ class _TvSeriesDetailPageState extends State<TvSeriesDetailPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<TvSeriesDetailNotifier>(context, listen: false)
-          .fetchTvSeriesDetail(widget.id);
-      Provider.of<TvSeriesDetailNotifier>(context, listen: false)
-          .loadWatchlistStatus(widget.id);
+      context.read<TvSeriesDetailBloc>()
+        ..add(FetchTvSeriesDetail(widget.id))
+        ..add(LoadTvSeriesWatchlistStatus(widget.id));
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<TvSeriesDetailNotifier>(
-        builder: (context, provider, child) {
+      body: BlocConsumer<TvSeriesDetailBloc, TvSeriesDetailState>(
+        listenWhen: (previous, current) =>
+            previous.watchlistMessage != current.watchlistMessage &&
+            current.watchlistMessage.isNotEmpty,
+        listener: (context, state) {
+          final message = state.watchlistMessage;
+          if (message == TvSeriesDetailBloc.watchlistAddSuccessMessage ||
+              message == TvSeriesDetailBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          } else {
+            showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(content: Text(message)),
+            );
+          }
+        },
+        builder: (context, provider) {
           if (provider.tvSeriesState == RequestState.Loading) {
             return const LoadingView();
           }
-          if (provider.tvSeriesState == RequestState.Loaded) {
+          if (provider.tvSeriesState == RequestState.Loaded &&
+              provider.tvSeries != null) {
             return TvSeriesDetailContent(
-              provider.tvSeries,
+              provider.tvSeries!,
               provider.tvSeriesRecommendations,
               provider.isAddedToWatchlist,
             );
@@ -117,8 +136,8 @@ class TvSeriesDetailContent extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text('Recommendations', style: kHeading6),
                 const SizedBox(height: 12),
-                Consumer<TvSeriesDetailNotifier>(
-                  builder: (context, data, child) {
+                BlocBuilder<TvSeriesDetailBloc, TvSeriesDetailState>(
+                  builder: (context, data) {
                     if (data.recommendationState == RequestState.Loading) {
                       return const LoadingView(height: 150);
                     }
@@ -142,31 +161,12 @@ class TvSeriesDetailContent extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleWatchlist(BuildContext context) async {
-    final notifier = Provider.of<TvSeriesDetailNotifier>(
-      context,
-      listen: false,
-    );
-
+  void _toggleWatchlist(BuildContext context) {
+    final bloc = context.read<TvSeriesDetailBloc>();
     if (!isAddedWatchlist) {
-      await notifier.addWatchlist(tvSeries);
+      bloc.add(AddTvSeriesToWatchlist(tvSeries));
     } else {
-      await notifier.removeFromWatchlist(tvSeries);
-    }
-
-    final message = notifier.watchlistMessage;
-    if (!context.mounted) return;
-
-    if (message == TvSeriesDetailNotifier.watchlistAddSuccessMessage ||
-        message == TvSeriesDetailNotifier.watchlistRemoveSuccessMessage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    } else {
-      showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(content: Text(message)),
-      );
+      bloc.add(RemoveTvSeriesFromWatchlist(tvSeries));
     }
   }
 

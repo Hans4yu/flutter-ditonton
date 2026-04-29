@@ -4,12 +4,12 @@ import 'package:ditonton/domain/entities/tv_series.dart';
 import 'package:ditonton/domain/entities/tv_series_detail.dart';
 import 'package:ditonton/domain/repositories/tv_series_repository.dart';
 import 'package:ditonton/domain/usecases/search_tv_series.dart';
+import 'package:ditonton/presentation/bloc/tv_series_search/tv_series_search_bloc.dart';
 import 'package:ditonton/presentation/pages/search_tv_series_page.dart';
-import 'package:ditonton/presentation/provider/tv_series_search_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +18,8 @@ void main() {
     final repository = _FakeTvSeriesRepository();
 
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => TvSeriesSearchNotifier(
+      BlocProvider(
+        create: (_) => TvSeriesSearchBloc(
           searchTvSeries: SearchTvSeries(repository),
         ),
         child: const MaterialApp(

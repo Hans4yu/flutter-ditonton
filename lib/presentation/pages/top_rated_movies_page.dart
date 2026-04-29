@@ -1,8 +1,10 @@
 import 'package:ditonton/common/state_enum.dart';
-import 'package:ditonton/presentation/provider/top_rated_movies_notifier.dart';
+import 'package:ditonton/presentation/bloc/top_rated_movies/top_rated_movies_bloc.dart';
+import 'package:ditonton/presentation/bloc/top_rated_movies/top_rated_movies_event.dart';
+import 'package:ditonton/presentation/bloc/top_rated_movies/top_rated_movies_state.dart';
 import 'package:ditonton/presentation/widgets/movie_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopRatedMoviesPage extends StatefulWidget {
   static const ROUTE_NAME = '/top-rated-movie';
@@ -17,8 +19,7 @@ class _TopRatedMoviesPageState extends State<TopRatedMoviesPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<TopRatedMoviesNotifier>(context, listen: false)
-          .fetchTopRatedMovies();
+      context.read<TopRatedMoviesBloc>().add(const FetchTopRatedMovies());
     });
   }
 
@@ -30,8 +31,8 @@ class _TopRatedMoviesPageState extends State<TopRatedMoviesPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Consumer<TopRatedMoviesNotifier>(
-          builder: (context, data, child) {
+        child: BlocBuilder<TopRatedMoviesBloc, TopRatedMoviesState>(
+          builder: (context, data) {
             if (data.state == RequestState.Loading) {
               return Center(
                 child: CircularProgressIndicator(),

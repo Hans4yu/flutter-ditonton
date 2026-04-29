@@ -1,13 +1,17 @@
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/common/utils.dart';
-import 'package:ditonton/presentation/provider/watchlist_movie_notifier.dart';
-import 'package:ditonton/presentation/provider/watchlist_tv_series_notifier.dart';
+import 'package:ditonton/presentation/bloc/watchlist_movie/watchlist_movie_bloc.dart';
+import 'package:ditonton/presentation/bloc/watchlist_movie/watchlist_movie_event.dart';
+import 'package:ditonton/presentation/bloc/watchlist_movie/watchlist_movie_state.dart';
+import 'package:ditonton/presentation/bloc/watchlist_tv_series/watchlist_tv_series_bloc.dart';
+import 'package:ditonton/presentation/bloc/watchlist_tv_series/watchlist_tv_series_event.dart';
+import 'package:ditonton/presentation/bloc/watchlist_tv_series/watchlist_tv_series_state.dart';
 import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:ditonton/presentation/widgets/movie_card_list.dart';
 import 'package:ditonton/presentation/widgets/tv_series_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class WatchlistMoviesPage extends StatefulWidget {
   const WatchlistMoviesPage({this.showAppBar = true, super.key});
@@ -43,10 +47,8 @@ class _WatchlistMoviesPageState extends State<WatchlistMoviesPage>
   }
 
   void _fetchWatchlists() {
-    Provider.of<WatchlistMovieNotifier>(context, listen: false)
-        .fetchWatchlistMovies();
-    Provider.of<WatchlistTvSeriesNotifier>(context, listen: false)
-        .fetchWatchlistTvSeries();
+    context.read<WatchlistMovieBloc>().add(const FetchWatchlistMovies());
+    context.read<WatchlistTvSeriesBloc>().add(const FetchWatchlistTvSeries());
   }
 
   @override
@@ -103,8 +105,8 @@ class _WatchlistMoviesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WatchlistMovieNotifier>(
-      builder: (context, data, child) {
+    return BlocBuilder<WatchlistMovieBloc, WatchlistMovieState>(
+      builder: (context, data) {
         if (data.watchlistState == RequestState.Loading) {
           return const LoadingView();
         }
@@ -137,8 +139,8 @@ class _WatchlistTvSeriesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WatchlistTvSeriesNotifier>(
-      builder: (context, data, child) {
+    return BlocBuilder<WatchlistTvSeriesBloc, WatchlistTvSeriesState>(
+      builder: (context, data) {
         if (data.watchlistState == RequestState.Loading) {
           return const LoadingView();
         }

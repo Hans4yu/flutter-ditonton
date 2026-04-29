@@ -1,8 +1,10 @@
 import 'package:ditonton/common/state_enum.dart';
-import 'package:ditonton/presentation/provider/on_the_air_tv_series_notifier.dart';
+import 'package:ditonton/presentation/bloc/on_the_air_tv_series/on_the_air_tv_series_bloc.dart';
+import 'package:ditonton/presentation/bloc/on_the_air_tv_series/on_the_air_tv_series_event.dart';
+import 'package:ditonton/presentation/bloc/on_the_air_tv_series/on_the_air_tv_series_state.dart';
 import 'package:ditonton/presentation/widgets/tv_series_card_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnTheAirTvSeriesPage extends StatefulWidget {
   const OnTheAirTvSeriesPage({super.key});
@@ -19,8 +21,7 @@ class _OnTheAirTvSeriesPageState extends State<OnTheAirTvSeriesPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<OnTheAirTvSeriesNotifier>(context, listen: false)
-          .fetchOnTheAirTvSeries();
+      context.read<OnTheAirTvSeriesBloc>().add(const FetchOnTheAirTvSeries());
     });
   }
 
@@ -32,8 +33,8 @@ class _OnTheAirTvSeriesPageState extends State<OnTheAirTvSeriesPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Consumer<OnTheAirTvSeriesNotifier>(
-          builder: (context, data, child) {
+        child: BlocBuilder<OnTheAirTvSeriesBloc, OnTheAirTvSeriesState>(
+          builder: (context, data) {
             if (data.state == RequestState.Loading) {
               return const Center(
                 child: CircularProgressIndicator(),

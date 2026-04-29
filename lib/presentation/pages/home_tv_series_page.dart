@@ -11,9 +11,12 @@ import 'package:ditonton/presentation/pages/watchlist_tv_series_page.dart';
 import 'package:ditonton/presentation/pages/on_the_air_tv_series_page.dart';
 import 'package:ditonton/presentation/pages/popular_tv_series_page.dart';
 import 'package:ditonton/presentation/pages/top_rated_tv_series_page.dart';
-import 'package:ditonton/presentation/provider/tv_series_list_notifier.dart';
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_bloc.dart';
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_event.dart'
+    as tv_events;
+import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_state.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeTvSeriesPage extends StatefulWidget {
   const HomeTvSeriesPage({super.key});
@@ -30,10 +33,10 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Provider.of<TvSeriesListNotifier>(context, listen: false)
-        ..fetchOnTheAirTvSeries()
-        ..fetchPopularTvSeries()
-        ..fetchTopRatedTvSeries();
+      context.read<TvSeriesListBloc>()
+        ..add(const tv_events.FetchOnTheAirTvSeries())
+        ..add(const tv_events.FetchPopularTvSeries())
+        ..add(const tv_events.FetchTopRatedTvSeries());
     });
   }
 
@@ -127,8 +130,8 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
                 'On The Air',
                 style: kHeading6,
               ),
-              Consumer<TvSeriesListNotifier>(
-                builder: (context, data, child) {
+              BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+                builder: (context, data) {
                   if (data.onTheAirState == RequestState.Loading) {
                     return const Center(
                       child: CircularProgressIndicator(),
@@ -147,8 +150,8 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
                   PopularTvSeriesPage.ROUTE_NAME,
                 ),
               ),
-              Consumer<TvSeriesListNotifier>(
-                builder: (context, data, child) {
+              BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+                builder: (context, data) {
                   if (data.popularTvSeriesState == RequestState.Loading) {
                     return const Center(
                       child: CircularProgressIndicator(),
@@ -167,8 +170,8 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
                   TopRatedTvSeriesPage.ROUTE_NAME,
                 ),
               ),
-              Consumer<TvSeriesListNotifier>(
-                builder: (context, data, child) {
+              BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+                builder: (context, data) {
                   if (data.topRatedTvSeriesState == RequestState.Loading) {
                     return const Center(
                       child: CircularProgressIndicator(),
