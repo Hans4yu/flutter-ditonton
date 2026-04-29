@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ditonton/common/analytics_helper.dart';
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/domain/entities/movie.dart';
@@ -36,6 +37,7 @@ class _HomeMoviePageState extends State<HomeMoviePage> {
   @override
   void initState() {
     super.initState();
+    logAnalyticsEvent((analytics) => analytics.logHomeOpened());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<MovieListBloc>()
@@ -546,14 +548,19 @@ class _HorizontalContentCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       RatingBadge(rating: rating, compact: true),
-                      const Spacer(),
-                      Text(
-                        overview == null || overview!.isEmpty
-                            ? 'Overview unavailable'
-                            : overview!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: kBodyText,
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            overview == null || overview!.isEmpty
+                                ? 'Overview unavailable'
+                                : overview!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: kBodyText,
+                          ),
+                        ),
                       ),
                     ],
                   ),

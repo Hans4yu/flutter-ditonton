@@ -160,7 +160,7 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('LoadingView renders progress indicator at requested height',
+  testWidgets('LoadingView renders animated sprite at requested height',
       (tester) async {
     await tester.pumpWidget(makeTestableWidget(
       const LoadingView(height: 96),
@@ -168,6 +168,8 @@ void main() {
 
     final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
     expect(sizedBox.height, 96);
+    expect(find.byType(CinematicLoadingSprite), findsOneWidget);
+    expect(find.image(const AssetImage(loadingSpriteAsset)), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }

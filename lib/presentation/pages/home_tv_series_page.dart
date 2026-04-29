@@ -15,6 +15,7 @@ import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_bloc.da
 import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_event.dart'
     as tv_events;
 import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_state.dart';
+import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -133,9 +134,7 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
               BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
                 builder: (context, data) {
                   if (data.onTheAirState == RequestState.Loading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    return const LoadingView();
                   } else if (data.onTheAirState == RequestState.Loaded) {
                     return TvSeriesListWidget(data.onTheAirTvSeries);
                   } else {
@@ -153,9 +152,7 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
               BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
                 builder: (context, data) {
                   if (data.popularTvSeriesState == RequestState.Loading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    return const LoadingView();
                   } else if (data.popularTvSeriesState == RequestState.Loaded) {
                     return TvSeriesListWidget(data.popularTvSeries);
                   } else {
@@ -173,9 +170,7 @@ class _HomeTvSeriesPageState extends State<HomeTvSeriesPage> {
               BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
                 builder: (context, data) {
                   if (data.topRatedTvSeriesState == RequestState.Loading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    return const LoadingView();
                   } else if (data.topRatedTvSeriesState ==
                       RequestState.Loaded) {
                     return TvSeriesListWidget(data.topRatedTvSeries);
@@ -248,9 +243,7 @@ class TvSeriesListWidget extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 child: CachedNetworkImage(
                   imageUrl: '$BASE_IMAGE_URL${item.posterPath}',
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  placeholder: (context, url) => const LoadingView(height: 200),
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
               ),

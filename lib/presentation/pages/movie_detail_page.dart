@@ -1,3 +1,4 @@
+import 'package:ditonton/common/analytics_helper.dart';
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/domain/entities/genre.dart';
@@ -25,6 +26,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   @override
   void initState() {
     super.initState();
+    logAnalyticsEvent(
+      (analytics) => analytics.logMovieDetailOpened(widget.id),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<MovieDetailBloc>()
@@ -151,8 +155,20 @@ class DetailContent extends StatelessWidget {
   void _toggleWatchlist(BuildContext context) {
     final bloc = context.read<MovieDetailBloc>();
     if (!isAddedWatchlist) {
+      logAnalyticsEvent(
+        (analytics) => analytics.logAddToWatchlist(
+          contentType: 'movie',
+          contentId: movie.id,
+        ),
+      );
       bloc.add(AddMovieToWatchlist(movie));
     } else {
+      logAnalyticsEvent(
+        (analytics) => analytics.logRemoveFromWatchlist(
+          contentType: 'movie',
+          contentId: movie.id,
+        ),
+      );
       bloc.add(RemoveMovieFromWatchlist(movie));
     }
   }

@@ -51,14 +51,20 @@ class TvSeriesCard extends StatelessWidget {
                         rating: tvSeries.voteAverage,
                         compact: true,
                       ),
-                      const Spacer(),
-                      Text(
-                        tvSeries.overview == null || tvSeries.overview!.isEmpty
-                            ? 'Overview unavailable'
-                            : tvSeries.overview!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: kBodyText,
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            tvSeries.overview == null ||
+                                    tvSeries.overview!.isEmpty
+                                ? 'Overview unavailable'
+                                : tvSeries.overview!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: kBodyText,
+                          ),
+                        ),
                       ),
                     ],
                   ),

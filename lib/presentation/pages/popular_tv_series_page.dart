@@ -2,6 +2,7 @@ import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/presentation/bloc/popular_tv_series/popular_tv_series_bloc.dart';
 import 'package:ditonton/presentation/bloc/popular_tv_series/popular_tv_series_event.dart';
 import 'package:ditonton/presentation/bloc/popular_tv_series/popular_tv_series_state.dart';
+import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:ditonton/presentation/widgets/tv_series_card_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,9 +37,7 @@ class _PopularTvSeriesPageState extends State<PopularTvSeriesPage> {
         child: BlocBuilder<PopularTvSeriesBloc, PopularTvSeriesState>(
           builder: (context, data) {
             if (data.state == RequestState.Loading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const LoadingView();
             } else if (data.state == RequestState.Loaded) {
               return ListView.builder(
                 itemBuilder: (context, index) {

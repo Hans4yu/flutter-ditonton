@@ -1,4 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:ditonton/common/analytics_helper.dart';
+import 'package:ditonton/common/analytics_service.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_bloc.dart';
 import 'package:ditonton/presentation/bloc/movie_detail/movie_detail_event.dart';
@@ -18,6 +20,10 @@ void main() {
 
   setUp(() {
     mockBloc = MockMovieDetailBloc();
+  });
+
+  tearDown(() {
+    configureAnalyticsResolver(() => null);
   });
 
   Widget makeTestableWidget(Widget body) {
@@ -46,6 +52,18 @@ void main() {
     await tester.pumpWidget(makeTestableWidget(MovieDetailPage(id: 1)));
 
     expect(find.byIcon(Icons.add), findsOneWidget);
+  });
+
+  testWidgets('logs movie detail opened event', (tester) async {
+    final logger = RecordingAnalyticsLogger();
+    configureAnalyticsResolver(() => AnalyticsService(logger));
+    whenListen(mockBloc, const Stream<MovieDetailState>.empty(),
+        initialState: loadedState(isAdded: false));
+
+    await tester.pumpWidget(makeTestableWidget(MovieDetailPage(id: 1)));
+    await tester.pump();
+
+    expect(logger.events, contains(AnalyticsEvents.movieDetailOpened));
   });
 
   testWidgets(
@@ -80,6 +98,32 @@ void main() {
     expect(find.text('Added to Watchlist'), findsWidgets);
   });
 
+  testWidgets('logs movie add to watchlist event', (tester) async {
+    final logger = RecordingAnalyticsLogger();
+    configureAnalyticsResolver(() => AnalyticsService(logger));
+    whenListen(mockBloc, const Stream<MovieDetailState>.empty(),
+        initialState: loadedState(isAdded: false));
+
+    await tester.pumpWidget(makeTestableWidget(MovieDetailPage(id: 1)));
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    expect(logger.events, contains(AnalyticsEvents.addToWatchlist));
+  });
+
+  testWidgets('logs movie remove from watchlist event', (tester) async {
+    final logger = RecordingAnalyticsLogger();
+    configureAnalyticsResolver(() => AnalyticsService(logger));
+    whenListen(mockBloc, const Stream<MovieDetailState>.empty(),
+        initialState: loadedState(isAdded: true));
+
+    await tester.pumpWidget(makeTestableWidget(MovieDetailPage(id: 1)));
+    await tester.tap(find.byIcon(Icons.check));
+    await tester.pump();
+
+    expect(logger.events, contains(AnalyticsEvents.removeFromWatchlist));
+  });
+
   testWidgets(
       'Watchlist button should display AlertDialog when add to watchlist failed',
       (tester) async {
@@ -97,4 +141,16 @@ void main() {
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text('Failed'), findsOneWidget);
   });
+}
+
+class RecordingAnalyticsLogger implements AnalyticsLogger {
+  final events = <String>[];
+
+  @override
+  Future<void> logEvent(
+    String name, {
+    Map<String, Object>? parameters,
+  }) async {
+    events.add(name);
+  }
 }

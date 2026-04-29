@@ -48,14 +48,19 @@ class MovieCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       RatingBadge(rating: movie.voteAverage, compact: true),
-                      const Spacer(),
-                      Text(
-                        movie.overview == null || movie.overview!.isEmpty
-                            ? 'Overview unavailable'
-                            : movie.overview!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: kBodyText,
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            movie.overview == null || movie.overview!.isEmpty
+                                ? 'Overview unavailable'
+                                : movie.overview!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: kBodyText,
+                          ),
+                        ),
                       ),
                     ],
                   ),

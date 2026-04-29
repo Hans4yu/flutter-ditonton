@@ -1,3 +1,4 @@
+import 'package:ditonton/common/analytics_service.dart';
 import 'package:ditonton/data/datasources/db/database_helper.dart';
 import 'package:ditonton/data/datasources/movie_local_data_source.dart';
 import 'package:ditonton/data/datasources/movie_remote_data_source.dart';
@@ -5,6 +6,7 @@ import 'package:ditonton/data/datasources/tv_series_local_data_source.dart';
 import 'package:ditonton/data/datasources/tv_series_remote_data_source.dart';
 import 'package:ditonton/data/repositories/movie_repository_impl.dart';
 import 'package:ditonton/data/repositories/tv_series_repository_impl.dart';
+import 'package:ditonton/common/ssl_pinning.dart';
 import 'package:ditonton/domain/repositories/movie_repository.dart';
 import 'package:ditonton/domain/repositories/tv_series_repository.dart';
 import 'package:ditonton/domain/usecases/get_movie_detail.dart';
@@ -40,12 +42,13 @@ import 'package:ditonton/presentation/bloc/tv_series_list/tv_series_list_bloc.da
 import 'package:ditonton/presentation/bloc/tv_series_search/tv_series_search_bloc.dart';
 import 'package:ditonton/presentation/bloc/watchlist_movie/watchlist_movie_bloc.dart';
 import 'package:ditonton/presentation/bloc/watchlist_tv_series/watchlist_tv_series_bloc.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
 final locator = GetIt.instance;
 
-void init() {
+Future<void> init() async {
   locator.registerFactory(
     () => MovieListBloc(
       getNowPlayingMovies: locator(),
@@ -162,5 +165,11 @@ void init() {
   );
 
   locator.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
-  locator.registerLazySingleton(() => http.Client());
+  locator.registerLazySingleton<AnalyticsService>(
+    () => AnalyticsService(
+      FirebaseAnalyticsLogger(FirebaseAnalytics.instance),
+    ),
+  );
+  final pinnedClient = await createPinnedHttpClient();
+  locator.registerLazySingleton<http.Client>(() => pinnedClient);
 }

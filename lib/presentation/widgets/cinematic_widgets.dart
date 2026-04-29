@@ -8,6 +8,7 @@ const String backdropPlaceholderAsset =
 const String emptySearchAsset = 'assets/images/empty_search.png';
 const String emptyWatchlistAsset = 'assets/images/empty_watchlist.png';
 const String errorStateAsset = 'assets/images/error_state.png';
+const String loadingSpriteAsset = 'assets/images/loading_sprite.gif';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -157,10 +158,51 @@ class LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: const Center(
-        child: CircularProgressIndicator(color: kAccentRed),
+    return DecoratedBox(
+      decoration: const BoxDecoration(color: kRichBlack),
+      child: SizedBox(
+        height: height,
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CinematicLoadingSprite(),
+              SizedBox(height: 12),
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: kAccentRed,
+                  strokeWidth: 2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CinematicLoadingSprite extends StatelessWidget {
+  const CinematicLoadingSprite({
+    this.size = 56,
+    super.key,
+  });
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Image.asset(
+          loadingSpriteAsset,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
       ),
     );
   }

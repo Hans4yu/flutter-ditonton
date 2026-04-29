@@ -1,3 +1,4 @@
+import 'package:ditonton/common/analytics_helper.dart';
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/presentation/pages/movie_detail_page.dart';
@@ -30,6 +31,12 @@ class SearchPage extends StatelessWidget {
             ],
             TextField(
               onSubmitted: (query) {
+                logAnalyticsEvent(
+                  (analytics) => analytics.logSearchSubmitted(
+                    contentType: 'movie',
+                    query: query,
+                  ),
+                );
                 context.read<MovieSearchBloc>().add(
                       SearchMoviesRequested(query),
                     );

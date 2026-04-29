@@ -1,3 +1,4 @@
+import 'package:ditonton/common/analytics_helper.dart';
 import 'package:ditonton/common/constants.dart';
 import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/domain/entities/genre.dart';
@@ -26,6 +27,9 @@ class _TvSeriesDetailPageState extends State<TvSeriesDetailPage> {
   @override
   void initState() {
     super.initState();
+    logAnalyticsEvent(
+      (analytics) => analytics.logTvDetailOpened(widget.id),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<TvSeriesDetailBloc>()
@@ -164,8 +168,20 @@ class TvSeriesDetailContent extends StatelessWidget {
   void _toggleWatchlist(BuildContext context) {
     final bloc = context.read<TvSeriesDetailBloc>();
     if (!isAddedWatchlist) {
+      logAnalyticsEvent(
+        (analytics) => analytics.logAddToWatchlist(
+          contentType: 'tv_series',
+          contentId: tvSeries.id,
+        ),
+      );
       bloc.add(AddTvSeriesToWatchlist(tvSeries));
     } else {
+      logAnalyticsEvent(
+        (analytics) => analytics.logRemoveFromWatchlist(
+          contentType: 'tv_series',
+          contentId: tvSeries.id,
+        ),
+      );
       bloc.add(RemoveTvSeriesFromWatchlist(tvSeries));
     }
   }

@@ -2,6 +2,7 @@ import 'package:ditonton/common/state_enum.dart';
 import 'package:ditonton/presentation/bloc/popular_movies/popular_movies_bloc.dart';
 import 'package:ditonton/presentation/bloc/popular_movies/popular_movies_event.dart';
 import 'package:ditonton/presentation/bloc/popular_movies/popular_movies_state.dart';
+import 'package:ditonton/presentation/widgets/cinematic_widgets.dart';
 import 'package:ditonton/presentation/widgets/movie_card_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,9 +35,7 @@ class _PopularMoviesPageState extends State<PopularMoviesPage> {
         child: BlocBuilder<PopularMoviesBloc, PopularMoviesState>(
           builder: (context, data) {
             if (data.state == RequestState.Loading) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
+              return const LoadingView();
             } else if (data.state == RequestState.Loaded) {
               return ListView.builder(
                 itemBuilder: (context, index) {
