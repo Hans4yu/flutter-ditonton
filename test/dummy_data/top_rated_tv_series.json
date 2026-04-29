@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "backdrop_path": "/tv-backdrop.jpg",
+      "first_air_date": "2024-01-01",
+      "genre_ids": [
+        16,
+        10759
+      ],
+      "id": 100,
+      "name": "Demon Slayer",
+      "origin_country": [
+        "JP"
+      ],
+      "original_language": "ja",
+      "original_name": "Kimetsu no Yaiba",
+      "overview": "Tanjiro joins the Demon Slayer Corps.",
+      "popularity": 99.9,
+      "poster_path": "/tv-poster.jpg",
+      "vote_average": 8.8,
+      "vote_count": 1200
+    }
+  ]
+}

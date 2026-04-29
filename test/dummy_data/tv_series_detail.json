@@ -1,0 +1,34 @@
+{
+  "backdrop_path": "/tv-backdrop.jpg",
+  "episode_run_time": [
+    24
+  ],
+  "first_air_date": "2024-01-01",
+  "genres": [
+    {
+      "id": 1,
+      "name": "Action"
+    }
+  ],
+  "id": 100,
+  "name": "Demon Slayer",
+  "number_of_episodes": 11,
+  "number_of_seasons": 1,
+  "original_name": "Kimetsu no Yaiba",
+  "overview": "Tanjiro joins the Demon Slayer Corps.",
+  "poster_path": "/tv-poster.jpg",
+  "seasons": [
+    {
+      "air_date": "2024-01-01",
+      "episode_count": 11,
+      "id": 10,
+      "name": "Season 1",
+      "overview": "season overview",
+      "poster_path": "/season.jpg",
+      "season_number": 1
+    }
+  ],
+  "status": "Ended",
+  "vote_average": 8.8,
+  "vote_count": 1200
+}
