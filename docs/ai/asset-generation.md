@@ -1,5 +1,7 @@
 # Asset Generation Rules
 
+Use $imagegen from C:\Users\farha\.codex\skills\.system\imagegen\SKILL.md when new visual assets are needed.
+
 All visual assets must be created specifically for this repository.
 
 Hard rules:

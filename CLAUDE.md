@@ -45,3 +45,9 @@ Before coding:
 - Inspect the current file structure.
 - Identify the smallest set of files to change.
 - Explain risks if the requested change may affect submission requirements.
+
+Tool instructions:
+- For Android app validation, use @test-android-apps after UI, navigation, asset, or interaction changes.
+- For visual asset generation, use $imagegen from C:\Users\farha\.codex\skills\.system\imagegen\SKILL.md.
+- Generated assets must be created specifically for this repository.
+- Do not inspect, copy, or reuse assets from directories outside this project.

@@ -2,6 +2,8 @@
 
 This folder contains end-to-end app flow tests.
 
+Use @test-android-apps to validate Android behavior after UI, navigation, asset, or interaction changes.
+
 Purpose:
 Integration tests verify major user flows in the running app.
 
@@ -22,3 +24,14 @@ Rules:
 - Prefer stable keys for important widgets.
 - Add keys only where useful for tests.
 - Do not add keys everywhere without purpose.
+
+The validation must check:
+- app launches without crash
+- Home page appears
+- Search page opens
+- Watchlist page opens
+- movie detail opens
+- TV series detail opens if supported
+- no blank screen
+- no missing asset error
+- no visible layout overflow
