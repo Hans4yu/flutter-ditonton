@@ -4,21 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Widget makeTestableWidget(Widget child) {
-    return MaterialApp(
-      home: Scaffold(body: child),
-    );
+    return MaterialApp(home: Scaffold(body: child));
   }
 
-  testWidgets('SectionHeader shows see all action when callback is provided',
-      (tester) async {
+  testWidgets('SectionHeader shows see all action when callback is provided', (
+    tester,
+  ) async {
     var tapped = false;
 
-    await tester.pumpWidget(makeTestableWidget(
-      SectionHeader(
-        title: 'Popular',
-        onSeeAll: () => tapped = true,
+    await tester.pumpWidget(
+      makeTestableWidget(
+        SectionHeader(title: 'Popular', onSeeAll: () => tapped = true),
       ),
-    ));
+    );
 
     expect(find.text('Popular'), findsOneWidget);
     expect(find.text('See all'), findsOneWidget);
@@ -29,39 +27,44 @@ void main() {
   });
 
   testWidgets('RatingBadge formats null and non-null ratings', (tester) async {
-    await tester.pumpWidget(makeTestableWidget(
-      const Column(
-        children: [
-          RatingBadge(rating: 7.25),
-          RatingBadge(rating: null, compact: true),
-        ],
+    await tester.pumpWidget(
+      makeTestableWidget(
+        const Column(
+          children: [
+            RatingBadge(rating: 7.25),
+            RatingBadge(rating: null, compact: true),
+          ],
+        ),
       ),
-    ));
+    );
 
     expect(find.byIcon(Icons.star_rounded), findsNWidgets(2));
     expect(find.text('7.3'), findsOneWidget);
     expect(find.text('0.0'), findsOneWidget);
   });
 
-  testWidgets('PrimaryWatchlistButton switches labels and triggers callback',
-      (tester) async {
+  testWidgets('PrimaryWatchlistButton switches labels and triggers callback', (
+    tester,
+  ) async {
     var addTapped = false;
     var addedTapped = false;
 
-    await tester.pumpWidget(makeTestableWidget(
-      Column(
-        children: [
-          PrimaryWatchlistButton(
-            isAdded: false,
-            onPressed: () => addTapped = true,
-          ),
-          PrimaryWatchlistButton(
-            isAdded: true,
-            onPressed: () => addedTapped = true,
-          ),
-        ],
+    await tester.pumpWidget(
+      makeTestableWidget(
+        Column(
+          children: [
+            PrimaryWatchlistButton(
+              isAdded: false,
+              onPressed: () => addTapped = true,
+            ),
+            PrimaryWatchlistButton(
+              isAdded: true,
+              onPressed: () => addedTapped = true,
+            ),
+          ],
+        ),
       ),
-    ));
+    );
 
     expect(find.text('Add to Watchlist'), findsOneWidget);
     expect(find.text('Added to Watchlist'), findsOneWidget);
@@ -75,29 +78,32 @@ void main() {
     expect(addedTapped, isTrue);
   });
 
-  testWidgets('EmptyStateView renders full and compact states safely',
-      (tester) async {
-    await tester.pumpWidget(makeTestableWidget(
-      Column(
-        children: [
-          const Expanded(
-            child: EmptyStateView(
-              title: 'No results',
-              message: 'Try a different query.',
-              assetName: emptySearchAsset,
+  testWidgets('EmptyStateView renders full and compact states safely', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      makeTestableWidget(
+        Column(
+          children: [
+            const Expanded(
+              child: EmptyStateView(
+                title: 'No results',
+                message: 'Try a different query.',
+                assetName: emptySearchAsset,
+              ),
             ),
-          ),
-          SizedBox(
-            height: 120,
-            child: EmptyStateView(
-              title: 'No saved movies',
-              message: 'Movies added to your watchlist will appear here.',
-              assetName: emptyWatchlistAsset,
+            SizedBox(
+              height: 120,
+              child: EmptyStateView(
+                title: 'No saved movies',
+                message: 'Movies added to your watchlist will appear here.',
+                assetName: emptyWatchlistAsset,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
 
     expect(find.text('No results'), findsOneWidget);
     expect(find.text('Try a different query.'), findsOneWidget);
@@ -108,11 +114,12 @@ void main() {
     );
   });
 
-  testWidgets('ErrorStateView uses fallback message when message is empty',
-      (tester) async {
-    await tester.pumpWidget(makeTestableWidget(
-      const ErrorStateView(message: '', height: 320),
-    ));
+  testWidgets('ErrorStateView uses fallback message when message is empty', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      makeTestableWidget(const ErrorStateView(message: '', height: 320)),
+    );
 
     expect(find.text('Content is unavailable'), findsOneWidget);
     expect(
@@ -121,36 +128,81 @@ void main() {
     );
   });
 
-  testWidgets('Poster and backdrop views use asset fallback for missing path',
-      (tester) async {
-    await tester.pumpWidget(makeTestableWidget(
-      const Row(
-        children: [
-          PosterImageView(posterPath: null, width: 80, height: 120),
-          BackdropImageView(backdropPath: '', width: 120, height: 80),
-        ],
+  testWidgets('ErrorStateView stays compact in horizontal content slots', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      makeTestableWidget(const ErrorStateView(message: '', height: 154)),
+    );
+
+    expect(find.text('Content is unavailable'), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets('EmptyStateView avoids overflow in keyboard-sized search space', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(
+            viewInsets: EdgeInsets.only(bottom: 320),
+          ),
+          child: const Scaffold(
+            body: SizedBox(
+              height: 340,
+              child: EmptyStateView(
+                title: 'Search the TV catalog',
+                message: 'Enter a TV series title to browse matching results.',
+                assetName: emptySearchAsset,
+              ),
+            ),
+          ),
+        ),
       ),
-    ));
+    );
+
+    expect(find.text('Search the TV catalog'), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Poster and backdrop views use asset fallback for missing path', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      makeTestableWidget(
+        const Row(
+          children: [
+            PosterImageView(posterPath: null, width: 80, height: 120),
+            BackdropImageView(backdropPath: '', width: 120, height: 80),
+          ],
+        ),
+      ),
+    );
 
     expect(find.byType(Image), findsNWidgets(2));
   });
 
-  testWidgets('PosterGridItem shows title, rating, and handles tap',
-      (tester) async {
+  testWidgets('PosterGridItem shows title, rating, and handles tap', (
+    tester,
+  ) async {
     var tapped = false;
 
-    await tester.pumpWidget(makeTestableWidget(
-      SizedBox(
-        width: 180,
-        height: 280,
-        child: PosterGridItem(
-          title: 'Apex',
-          posterPath: null,
-          rating: 6.5,
-          onTap: () => tapped = true,
+    await tester.pumpWidget(
+      makeTestableWidget(
+        SizedBox(
+          width: 180,
+          height: 280,
+          child: PosterGridItem(
+            title: 'Apex',
+            posterPath: null,
+            rating: 6.5,
+            onTap: () => tapped = true,
+          ),
         ),
       ),
-    ));
+    );
 
     expect(find.text('Apex'), findsOneWidget);
     expect(find.text('6.5'), findsOneWidget);
@@ -160,11 +212,10 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('LoadingView renders animated sprite at requested height',
-      (tester) async {
-    await tester.pumpWidget(makeTestableWidget(
-      const LoadingView(height: 96),
-    ));
+  testWidgets('LoadingView renders animated sprite at requested height', (
+    tester,
+  ) async {
+    await tester.pumpWidget(makeTestableWidget(const LoadingView(height: 96)));
 
     final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
     expect(sizedBox.height, 96);

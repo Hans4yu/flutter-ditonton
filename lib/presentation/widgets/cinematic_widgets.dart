@@ -11,11 +11,7 @@ const String errorStateAsset = 'assets/images/error_state.png';
 const String loadingSpriteAsset = 'assets/images/loading_sprite.gif';
 
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({
-    required this.title,
-    this.onSeeAll,
-    super.key,
-  });
+  const SectionHeader({required this.title, this.onSeeAll, super.key});
 
   final String title;
   final VoidCallback? onSeeAll;
@@ -51,11 +47,7 @@ class SectionHeader extends StatelessWidget {
 }
 
 class RatingBadge extends StatelessWidget {
-  const RatingBadge({
-    required this.rating,
-    this.compact = false,
-    super.key,
-  });
+  const RatingBadge({required this.rating, this.compact = false, super.key});
 
   final double? rating;
   final bool compact;
@@ -185,10 +177,7 @@ class LoadingView extends StatelessWidget {
 }
 
 class CinematicLoadingSprite extends StatelessWidget {
-  const CinematicLoadingSprite({
-    this.size = 56,
-    super.key,
-  });
+  const CinematicLoadingSprite({this.size = 56, super.key});
 
   final double size;
 
@@ -224,42 +213,56 @@ class EmptyStateView extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.hasBoundedHeight &&
-            constraints.maxHeight > 0 &&
-            constraints.maxHeight < 180;
+        final height =
+            constraints.hasBoundedHeight ? constraints.maxHeight : 0.0;
+        final isKeyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+        final isCompact = isKeyboardVisible || (height > 0 && height < 420);
+        final isTight = height > 0 && height < 520;
+        final imageSize = isTight ? 96.0 : 148.0;
+        final padding = isCompact
+            ? 12.0
+            : isTight
+                ? 16.0
+                : 24.0;
 
-        return Center(
-          child: Padding(
-            padding: EdgeInsets.all(isCompact ? 12 : 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!isCompact) ...[
-                  Image.asset(
-                    assetName,
-                    width: 148,
-                    height: 148,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  maxLines: isCompact ? 1 : 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: kHeading6,
+        return SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: height),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isCompact) ...[
+                      Image.asset(
+                        assetName,
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(height: isTight ? 12 : 20),
+                    ],
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: isTight ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: kHeading6,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      maxLines: isTight ? 2 : 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: kBodyText,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  maxLines: isCompact ? 2 : 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: kBodyText,
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -269,11 +272,7 @@ class EmptyStateView extends StatelessWidget {
 }
 
 class ErrorStateView extends StatelessWidget {
-  const ErrorStateView({
-    required this.message,
-    this.height,
-    super.key,
-  });
+  const ErrorStateView({required this.message, this.height, super.key});
 
   final String message;
   final double? height;
@@ -392,12 +391,7 @@ class _NetworkOrAssetImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imagePath == null || imagePath!.isEmpty) {
-      return Image.asset(
-        fallbackAsset,
-        width: width,
-        height: height,
-        fit: fit,
-      );
+      return Image.asset(fallbackAsset, width: width, height: height, fit: fit);
     }
 
     return CachedNetworkImage(
@@ -413,12 +407,8 @@ class _NetworkOrAssetImage extends StatelessWidget {
           child: CircularProgressIndicator(color: kAccentRed),
         ),
       ),
-      errorWidget: (context, url, error) => Image.asset(
-        fallbackAsset,
-        width: width,
-        height: height,
-        fit: fit,
-      ),
+      errorWidget: (context, url, error) =>
+          Image.asset(fallbackAsset, width: width, height: height, fit: fit),
     );
   }
 }

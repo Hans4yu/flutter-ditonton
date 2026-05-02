@@ -10,6 +10,7 @@ import 'package:ditonton/presentation/pages/popular_movies_page.dart';
 import 'package:ditonton/presentation/pages/popular_tv_series_page.dart';
 import 'package:ditonton/presentation/pages/search_page.dart';
 import 'package:ditonton/presentation/pages/top_rated_movies_page.dart';
+import 'package:ditonton/presentation/pages/top_rated_tv_series_page.dart';
 import 'package:ditonton/presentation/pages/tv_series_detail_page.dart';
 import 'package:ditonton/presentation/pages/watchlist_movies_page.dart';
 import 'package:ditonton/presentation/bloc/movie_list/movie_list_bloc.dart';
@@ -31,9 +32,19 @@ class HomeMoviePage extends StatefulWidget {
   State<HomeMoviePage> createState() => _HomeMoviePageState();
 }
 
-class _HomeMoviePageState extends State<HomeMoviePage> {
-  int _selectedIndex = 0;
+class _HomeNavigationCubit extends Cubit<int> {
+  _HomeNavigationCubit() : super(0);
 
+  void selectTab(int index) => emit(index);
+}
+
+class _HeroPageCubit extends Cubit<int> {
+  _HeroPageCubit() : super(0);
+
+  void selectPage(int index) => emit(index);
+}
+
+class _HomeMoviePageState extends State<HomeMoviePage> {
   @override
   void initState() {
     super.initState();
@@ -46,7 +57,8 @@ class _HomeMoviePageState extends State<HomeMoviePage> {
         ..add(const movie_events.FetchTopRatedMovies());
       context.read<TvSeriesListBloc>()
         ..add(const tv_events.FetchOnTheAirTvSeries())
-        ..add(const tv_events.FetchPopularTvSeries());
+        ..add(const tv_events.FetchPopularTvSeries())
+        ..add(const tv_events.FetchTopRatedTvSeries());
     });
   }
 
@@ -58,33 +70,39 @@ class _HomeMoviePageState extends State<HomeMoviePage> {
       const WatchlistMoviesPage(showAppBar: false),
     ];
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: pages,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
+    return BlocProvider(
+      create: (_) => _HomeNavigationCubit(),
+      child: BlocBuilder<_HomeNavigationCubit, int>(
+        builder: (context, selectedIndex) {
+          return Scaffold(
+            body: IndexedStack(
+              index: selectedIndex,
+              children: pages,
+            ),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: selectedIndex,
+              onDestinationSelected:
+                  context.read<_HomeNavigationCubit>().selectTab,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home_rounded),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.search_outlined),
+                  selectedIcon: Icon(Icons.search_rounded),
+                  label: 'Search',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bookmark_border_rounded),
+                  selectedIcon: Icon(Icons.bookmark_rounded),
+                  label: 'Watchlist',
+                ),
+              ],
+            ),
+          );
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search_rounded),
-            label: 'Search',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark_border_rounded),
-            selectedIcon: Icon(Icons.bookmark_rounded),
-            label: 'Watchlist',
-          ),
-        ],
       ),
     );
   }
@@ -189,6 +207,24 @@ class _HomeContent extends StatelessWidget {
               },
             ),
           ),
+          SliverToBoxAdapter(
+            child: BlocBuilder<TvSeriesListBloc, TvSeriesListState>(
+              builder: (context, data) {
+                return _TvSection(
+                  title: 'Top Rated TV Series',
+                  tvSeries: data.topRatedTvSeries,
+                  state: data.topRatedTvSeriesState,
+                  message: data.message,
+                  onSeeAll: () {
+                    Navigator.pushNamed(
+                      context,
+                      TopRatedTvSeriesPage.ROUTE_NAME,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
@@ -207,9 +243,9 @@ class HeroBannerCarousel extends StatefulWidget {
 
 class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
   final PageController _controller = PageController();
+  final _pageCubit = _HeroPageCubit();
   Timer? _timer;
   Timer? _resumeTimer;
-  int _currentPage = 0;
 
   @override
   void initState() {
@@ -221,7 +257,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
   void didUpdateWidget(covariant HeroBannerCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.movies.length != widget.movies.length) {
-      _currentPage = 0;
+      _pageCubit.selectPage(0);
       _startAutoSlide();
     }
   }
@@ -230,6 +266,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
   void dispose() {
     _timer?.cancel();
     _resumeTimer?.cancel();
+    _pageCubit.close();
     _controller.dispose();
     super.dispose();
   }
@@ -239,7 +276,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
     if (widget.movies.length < 2) return;
     _timer = Timer.periodic(const Duration(seconds: 2), (_) {
       if (!_controller.hasClients || widget.movies.isEmpty) return;
-      final nextPage = (_currentPage + 1) % widget.movies.length;
+      final nextPage = (_pageCubit.state + 1) % widget.movies.length;
       _controller.animateToPage(
         nextPage,
         duration: const Duration(milliseconds: 450),
@@ -271,9 +308,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
         child: PageView.builder(
           controller: _controller,
           itemCount: widget.movies.length,
-          onPageChanged: (index) {
-            setState(() => _currentPage = index);
-          },
+          onPageChanged: _pageCubit.selectPage,
           itemBuilder: (context, index) {
             final movie = widget.movies[index];
             return _HeroBanner(movie: movie);
